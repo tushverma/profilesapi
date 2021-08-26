@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import filters
 from profiles_api import serializers, models, permissions
 
 
@@ -10,7 +11,8 @@ class HelloApiView(APIView):
     """Test API View"""
     serializer_class = serializers.HelloSerializer
 
-    def get(self, request, format=None) -> Response:
+    @staticmethod
+    def get(request, format=None) -> Response:
         """Returns a list of APIView"""
         an_apiview = [
             'User HTTP methods as function',
@@ -29,15 +31,18 @@ class HelloApiView(APIView):
             return Response({'message': message})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, pk=None):
+    @staticmethod
+    def put(request, pk=None):
         """Handling updating an object"""
         return Response({'message': 'Put'})
 
-    def patch(self, request, pk=None):
+    @staticmethod
+    def patch(request, pk=None):
         """Handling patching an object"""
         return Response({'message': 'Patch'})
 
-    def delete(self, request, pk=None):
+    @staticmethod
+    def delete(request, pk=None):
         """Handling deleting an object"""
         return Response({'message': 'Delete'})
 
@@ -46,7 +51,8 @@ class HelloViewSet(viewsets.ViewSet):
     """Test API ViewSet"""
     serializer_class = serializers.HelloSerializer
 
-    def list(self, request):
+    @staticmethod
+    def list(request):
         a_viewset = [
             'User Actions list, create, retrieve, update, partial_updatemethods as function',
             'Gives most control over application logic',
@@ -86,3 +92,5 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = models.UserProfile.objects.all()
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.UpdateOwnProfile,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', 'email',)
