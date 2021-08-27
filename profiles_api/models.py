@@ -2,23 +2,24 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
+from django.conf import settings
 
 
 class UserProfileManager(BaseUserManager):
     """ Manager for user profiles """
 
-    def create_user(self, email, name, password=None):
+    def create_user(self, email, name, password=None) -> "UserProfile":
         """Create a new user profile"""
         if not email:
             raise ValueError('Invalid Email')
-        ## normalize email, convert second half to lowercase
+        # normalize email, convert second half to lowercase
         email = self.normalize_email(email)
         user = self.model(email=email, name=name)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, name, password):
+    def create_superuser(self, email, name, password) -> "UserProfile":
         """Create and save a new super user"""
         user = self.create_user(email, name, password)
         user.is_superuser = True
@@ -39,14 +40,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
 
-    def get_full_name(self) -> models.CharField:
+    def get_full_name(self) -> str:
         """
         Retrieve full name of user
         :return: str
         """
         return self.name
 
-    def get_short_name(self) -> models.CharField:
+    def get_short_name(self) -> str:
         """
         Retrieve full name of user
         :return: str
@@ -59,3 +60,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         :return: str
         """
         return f"Email: {self.email}, Name:{self.name}"
+
+
+class ProfileFeedItem(models.Model):
+    """Profile status update"""
+    user_profile = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    status_text = models.CharField(max_length=255)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.status_text}"
